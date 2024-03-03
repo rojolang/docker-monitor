@@ -1,24 +1,22 @@
 package main
 
 import (
-    "context"
-    "log"
-    "docker-monitor/docker"
-    "docker-monitor/system"
-    "docker-monitor/ui"
+	"context"
+	"github.com/docker/docker/client"
+	"github.com/rojolang/docker-monitor/dockerstats" // Adjust the import path based on your project structure
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-    ctx := context.Background()
+	// Initialize Docker client
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		log.Fatalf("Error creating Docker client: %v", err)
+	}
 
-    containerStats, err := docker.FetchStats(ctx)
-    if err != nil {
-        log.Fatalf("Error fetching Docker stats: %v", err)
-    }
+	// Create a context
+	ctx := context.Background()
 
-    sysStats := system.FetchSystemStats()
-
-    if err := ui.StartUI(containerStats, sysStats); err != nil {
-        log.Fatalf("Error starting UI: %v", err)
-    }
+	// Use the dockerstats package to fetch and display Docker container stats
+	dockerstats.FetchAndDisplayStats(ctx, cli)
 }
